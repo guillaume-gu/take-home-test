@@ -1,7 +1,13 @@
 env:
   jest: true
   node: true
-parser: "@babel/eslint-parser"
 extends:
   - eslint:recommended
+  - plugin:import/recommended
+  - plugin:@vitest/legacy-recommended
   - plugin:prettier/recommended
+rules:
+  import/no-unresolved:
+    - error
+    -
+      ignore: ['^vitest/config']
