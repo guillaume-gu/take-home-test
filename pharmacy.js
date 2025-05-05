@@ -11,63 +11,20 @@ export class Pharmacy {
     this.drugs = drugs;
   }
 
-  // The function's name should rather be updateBenefitAndExpireValue
-  updateBenefitValue() {
+  updatePharmacy() {
     this.drugs = this.drugs.map((drug) => {
       // Magic Pill is always the same (that's MAGIC !!!)
       if (drug.name === "Magic Pill") {
         return drug;
       }
 
-      if (drug.name === "Fervex") {
-        // No use to add benefit since it will always be 0 when expiresIn is already inferior as 0.
-        if (drug.benefit < 50 && drug.expiresIn >= 0) {
-          this.addBenefit(drug);
-          if (drug.expiresIn < 11) {
-            this.addBenefit(drug);
-          }
-          if (drug.expiresIn < 6) {
-            this.addBenefit(drug);
-          }
-        }
-      }
-      // Always good to drink some herbal tea
-      else if (drug.name === "Herbal Tea") {
-        if (drug.benefit < 50) {
-          this.addBenefit(drug);
-        }
-      }
-      // Dafalgan is HERE
-      else if (drug.name === "Dafalgan") {
-        this.decreaseBenefit(drug, 2);
-      }
-      // Decrease the rest
-      else {
-        this.decreaseBenefit(drug);
+      this.updatePharmacyByName(drug, true);
+
+      if (drug.expiresIn >= 0) {
+        return drug;
       }
 
-      drug.expiresIn = drug.expiresIn - 1;
-
-      if (drug.expiresIn < 0) {
-        // The older Herbel Tea gets, the better it tastes (or benefit) :D, but not to much, never more than 50
-        if (drug.name === "Herbal Tea") {
-          if (drug.benefit < 50) {
-            this.addBenefit(drug);
-          }
-        }
-        // Fervex sucks when it expires, be carefull
-        else if (drug.name === "Fervex") {
-          drug.benefit = 0;
-        }
-        // Dafalgan is HERE
-        else if (drug.name === "Dafalgan") {
-          this.decreaseBenefit(drug, 2);
-        }
-        // Decrease the rest
-        else {
-          this.decreaseBenefit(drug);
-        }
-      }
+      this.updatePharmacyByName(drug);
 
       return drug;
     });
@@ -75,8 +32,53 @@ export class Pharmacy {
     return this.drugs;
   }
 
-  addBenefit(drug) {
-    drug.benefit = drug.benefit + 1;
+  updatePharmacyByName(drug, descreaseExpiresIn = false) {
+    if (drug.name === "Fervex") {
+      this.udpateFervex(drug);
+    } else if (drug.name === "Herbal Tea") {
+      this.updateHerbalTea(drug);
+    } else if (drug.name === "Dafalgan") {
+      this.updateDafalgan(drug);
+    } else {
+      this.updateDefaultDrug(drug);
+    }
+
+    if (descreaseExpiresIn) {
+      this.descreaseExpiresIn(drug);
+    }
+  }
+
+  udpateFervex(drug) {
+    if (drug.expiresIn < 0) {
+      drug.benefit = 0;
+    } else if (drug.benefit < 50) {
+      const isInf6 = drug.expiresIn < 6;
+      const isInf11 = drug.expiresIn < 11;
+      const valToIncrease = isInf6 ? 3 : isInf11 ? 2 : 1;
+      this.increaseBenefit(drug, valToIncrease);
+    }
+  }
+
+  updateHerbalTea(drug) {
+    if (drug.benefit < 50) {
+      this.increaseBenefit(drug);
+    }
+  }
+
+  updateDafalgan(drug) {
+    this.decreaseBenefit(drug, 2);
+  }
+
+  updateDefaultDrug(drug) {
+    this.decreaseBenefit(drug);
+  }
+
+  descreaseExpiresIn(drug) {
+    drug.expiresIn = drug.expiresIn - 1;
+  }
+
+  increaseBenefit(drug, rate = 1) {
+    drug.benefit = drug.benefit + rate;
   }
 
   decreaseBenefit(drug, rate = 1) {
